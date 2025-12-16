@@ -27,11 +27,15 @@ async function sendListDay({ date, origin }: SendListDayProps): Promise<void> {
     type: "list-day"
   }
 
-  sendMessage(
-    msg,
-    (reply) => { console.log(reply) },
-    (error) => { console.log(error) }
-  )
+  try {
+    sendMessage(
+      msg,
+      (reply) => { console.log(reply) },
+      (error) => { console.log(error) }
+    )
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 interface GetListDayProps {
@@ -52,11 +56,15 @@ async function getListDay({ origin }: GetListDayProps): Promise<void> {
     type: "get-list-day"
   }
 
-  sendMessage(
-    msg,
-    (reply) => { console.log(reply) },
-    (error) => { console.log(error) }
-  )
+  try {
+    sendMessage(
+      msg,
+      (reply) => { console.log(reply) },
+      (error) => { console.log(error) }
+    )
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 export const connectivityService = {
