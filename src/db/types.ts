@@ -8,4 +8,5 @@ export interface WaterConsumptionProps {
   formatted_date: string;
   register_type: RegisterType;
   origin: Origin;
+  excluded: boolean
 }

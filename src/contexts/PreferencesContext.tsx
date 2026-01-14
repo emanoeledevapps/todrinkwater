@@ -2,7 +2,9 @@ import { createContext, ReactNode, useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface SavedPreferencesProps {
+import { connectivityService } from "@connectivity";
+
+export interface SavedPreferencesProps {
   goal: number;
   glassSize: number;
   bottleSize: number;
@@ -27,6 +29,7 @@ export interface PreferencesContextProps {
   hasWatch: boolean;
   changePreference: (data: ChangePreferenceProps) => void;
   updateHasWatch: (value: boolean) => void;
+  updateWatchPreferences: (value: SavedPreferencesProps) => void;
 }
 
 export const PreferencesContext = createContext({} as PreferencesContextProps);
@@ -58,12 +61,14 @@ export function PreferecesProvider({ children }: PreferencesProviderProps) {
       setUnit(saved.unit);
       setGlassSize(saved.glassSize);
       setBottleSize(saved.bottleSize);
-      setGoal(saved.goal)
+      setGoal(saved.goal);
+      await connectivityService.sendPreferencesToWatch(saved);
     }
   }
 
   async function savePreferences(data: SavedPreferencesProps) {
     await AsyncStorage.setItem("saved-preferences", JSON.stringify(data));
+    await connectivityService.sendPreferencesToWatch(data);
   }
 
   async function changePreference(data: ChangePreferenceProps) {
@@ -104,9 +109,27 @@ export function PreferecesProvider({ children }: PreferencesProviderProps) {
     await AsyncStorage.setItem('has_watch', value ? '1' : '0');
   }
 
+  async function updateWatchPreferences(value: SavedPreferencesProps) {
+    setGlassSize(value.glassSize);
+    setGoal(value.goal);
+    setBottleSize(value.bottleSize);
+    setUnit(value.unit);
+    await AsyncStorage.setItem("saved-preferences", JSON.stringify(value));
+  }
+
   return (
     <PreferencesContext.Provider
-      value={{ goal, glassSize, unit, darkMode, bottleSize, hasWatch, changePreference, updateHasWatch }}
+      value={{ 
+        goal, 
+        glassSize, 
+        unit, 
+        darkMode, 
+        bottleSize, 
+        hasWatch, 
+        changePreference, 
+        updateHasWatch,
+        updateWatchPreferences 
+      }}
     >
       {children}
     </PreferencesContext.Provider>

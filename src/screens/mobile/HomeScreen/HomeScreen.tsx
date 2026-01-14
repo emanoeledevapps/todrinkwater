@@ -83,7 +83,8 @@ export function HomeScreen({ }: ScreenProps) {
           id: item.id,
           origin: item.origin,
           quantity: item.quantity,
-          register_type: item.register_type
+          register_type: item.register_type,
+          excluded: item.excluded
         })
       } catch (e) {
         console.log(e)

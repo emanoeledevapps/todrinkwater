@@ -33,7 +33,8 @@ async function addConsumptionFromConnectivity(data: WaterConsumptionProps): Prom
     formatted_date: data.formatted_date,
     origin: data.origin,
     quantity: data.quantity,
-    register_type: data.register_type
+    register_type: data.register_type,
+    excluded: data.excluded
   })
 }
 

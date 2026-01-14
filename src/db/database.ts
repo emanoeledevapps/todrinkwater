@@ -18,13 +18,14 @@ async function openDB() {
 async function createTable() {
   const database = await openDB();
   const query = `
-    CREATE TABLE IF NOT EXISTS WaterConsumption (
+    CREATE TABLE IF NOT EXISTS Consumption (
       id TEXT PRIMARY KEY,
       quantity INTEGER NOT NULL,
       created_at DATETIME,
       formatted_date TEXT,
       register_type TEXT,
-      origin TEXT
+      origin TEXT,
+      excluded BOOLEAN
     );
   `;
   await database.executeSql(query);
@@ -35,51 +36,62 @@ interface InsertConsumptionProps {
   formattedDate: string;
   registerType: RegisterType;
   origin: Origin;
+  excluded?: boolean
 }
-async function insertConsumption({ formattedDate, quantity, registerType, origin }: InsertConsumptionProps) {
+async function insertConsumption({ formattedDate, quantity, registerType, origin, excluded = false }: InsertConsumptionProps) {
   const database = await openDB();
   const id = Math.random().toString(36).substring(2, 15 + 2);
   const atualDate = format(new Date(), "yyyy-MM-dd kk:mm:ss")
 
   const query = `
-    INSERT INTO WaterConsumption (id, quantity, created_at, formatted_date, register_type, origin)
-    VALUES (?, ?, ?, ?, ?, ?);
+    INSERT INTO Consumption (id, quantity, created_at, formatted_date, register_type, origin, excluded)
+    VALUES (?, ?, ?, ?, ?, ?, ?);
   `;
 
   try {
-    await database.executeSql(query, [id, quantity, atualDate, formattedDate, registerType, origin]);
+    await database.executeSql(query, [id, quantity, atualDate, formattedDate, registerType, origin, excluded]);
   } catch (e) {
     console.log(e)
   }
 };
 
 async function insertConsumptionFromConnectivity(props: WaterConsumptionProps): Promise<void> {
-  const { formatted_date, quantity, register_type, origin, id, created_at } = props;
+  const { formatted_date, quantity, register_type, origin, id, created_at, excluded } = props;
   const database = await openDB();
-  //const atualDate = format(new Date(), "yyyy-MM-dd kk:mm:ss")
-
 
   const query = `
-    INSERT INTO WaterConsumption (id, quantity, created_at, formatted_date, register_type, origin)
-    VALUES (?, ?, ?, ?, ?, ?);
+    INSERT INTO Consumption (id, quantity, created_at, formatted_date, register_type, origin, excluded)
+    VALUES (?, ?, ?, ?, ?, ?, ?);
   `;
   try {
-    await database.executeSql(query, [id, quantity, created_at, formatted_date, register_type, origin]);
+    await database.executeSql(query, [id, quantity, created_at, formatted_date, register_type, origin, excluded]);
   } catch (e) {
     console.log(e)
   }
 };
 
-async function getAllConsumptions(): Promise<WaterConsumptionProps[]> {
+async function backupToNewTable(): Promise<WaterConsumptionProps[]> {
   const database = await openDB();
   const query = `
     SELECT * FROM WaterConsumption ORDER BY created_at DESC;
   `;
   const [results] = await database.executeSql(query);
-  const consumptions = [];
+  const consumptions: WaterConsumptionProps[] = [];
   for (let i = 0; i < results.rows.length; i++) {
     consumptions.push(results.rows.item(i));
   }
+
+  for (let b = 0; b < consumptions.length; b++) {
+    const register = consumptions[b];
+    const queryInsert = `
+      INSERT INTO Consumption (id, quantity, created_at, formatted_date, register_type, origin, excluded)
+      VALUES (?, ?, ?, ?, ?, ?, ?);
+    `;
+    await database.executeSql(queryInsert, [register.id, register.quantity, register.created_at, register.formatted_date, register.register_type, register.origin, false]);
+  }
+
+  const deleteQuery = 'DELETE FROM WaterConsumption';
+  await database.executeSql(deleteQuery)
   return consumptions;
 };
 
@@ -89,11 +101,11 @@ interface GetConsumptionPerDayProps {
 async function getConsumptionPerDay({ formattedDate }: GetConsumptionPerDayProps): Promise<WaterConsumptionProps[]> {
   const database = await openDB();
   const query = `
-    SELECT * FROM WaterConsumption 
-    WHERE formatted_date = ?
+    SELECT * FROM Consumption 
+    WHERE formatted_date = ? AND excluded = ?
     ORDER BY created_at DESC;
   `;
-  const [results] = await database.executeSql(query, [formattedDate]);
+  const [results] = await database.executeSql(query, [formattedDate, false]);
   const consumptions = [];
   for (let i = 0; i < results.rows.length; i++) {
     consumptions.push(results.rows.item(i));
@@ -107,7 +119,7 @@ interface ConsumptionExistsProps {
 async function consumptionExists({ createdAt }: ConsumptionExistsProps): Promise<boolean> {
   const database = await openDB();
   const query = `
-    SELECT 1 FROM WaterConsumption
+    SELECT 1 FROM Consumption
     WHERE created_at = ? LIMIT 1
   `;
   const [results] = await database.executeSql(query, [createdAt]);
@@ -117,7 +129,7 @@ async function consumptionExists({ createdAt }: ConsumptionExistsProps): Promise
 export const database = {
   openDB,
   createTable,
-  getAllConsumptions,
+  backupToNewTable,
   insertConsumption,
   getConsumptionPerDay,
   consumptionExists,
