@@ -20,7 +20,7 @@ export function NumberSelector({ handleMinus, handlePlus, value }: Props) {
         <Icon name="minus" color="gray" />
       </TouchableOpacity>
 
-      <View className="h-full flex-row w-[150px] border-l border-r border-gray-300 items-center justify-center gap-1">
+      <View className="h-full flex-row w-[80px] border-l border-r border-gray-300 items-center justify-center gap-1">
         <Text preset="semibold" className="text-primary-text-light dark:text-primary-text-dark text-lg">
           {Intl.NumberFormat("pt-BR").format(value)}
         </Text>
