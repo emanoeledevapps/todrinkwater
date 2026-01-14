@@ -3,6 +3,7 @@ import { PermissionsAndroid, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import DeviceInfo from 'react-native-device-info';
 import BootSplash from "react-native-bootsplash";
+import Toast from 'react-native-toast-message';
 
 import { database } from '@db';
 import { PreferecesProvider } from '@contexts';
@@ -54,6 +55,7 @@ function App() {
     <SafeAreaProvider>
       <PreferecesProvider>
         {isWatch ? <WatchRoutes /> : <MobileRoutes /> }
+        <Toast />
       </PreferecesProvider>
     </SafeAreaProvider>
   );
