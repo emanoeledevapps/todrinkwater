@@ -62,13 +62,17 @@ export function PreferecesProvider({ children }: PreferencesProviderProps) {
       setGlassSize(saved.glassSize);
       setBottleSize(saved.bottleSize);
       setGoal(saved.goal);
-      await connectivityService.sendPreferencesToWatch(saved);
+      if (hasWatch) {
+        await connectivityService.sendPreferencesToWatch(saved);
+      }
     }
   }
 
   async function savePreferences(data: SavedPreferencesProps) {
     await AsyncStorage.setItem("saved-preferences", JSON.stringify(data));
-    await connectivityService.sendPreferencesToWatch(data);
+    if(hasWatch) {
+      await connectivityService.sendPreferencesToWatch(data);
+    }
   }
 
   async function changePreference(data: ChangePreferenceProps) {
