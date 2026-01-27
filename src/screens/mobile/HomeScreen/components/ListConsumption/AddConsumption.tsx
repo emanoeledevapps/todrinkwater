@@ -13,7 +13,7 @@ interface Props {
 }
 export function AddConsumption({ consumptionAdded, selectedDate }: Props) {
   const today = isToday(selectedDate);
-  const { glassSize, bottleSize, unit } = usePreferencesContext();
+  const { glassSize, bottleSize, unit, hasWatch } = usePreferencesContext();
   const [loadingGlass, setLoadingGlass] = useState(false);
   const [loadingBottle, setLoadingBottle] = useState(false);
 
@@ -26,7 +26,7 @@ export function AddConsumption({ consumptionAdded, selectedDate }: Props) {
       origin: "smartphone"
     });
     consumptionAdded();
-    handleSendMessageToWatch();
+    if (hasWatch) handleSendMessageToWatch();
     setLoadingGlass(false);
   }
 
@@ -39,7 +39,7 @@ export function AddConsumption({ consumptionAdded, selectedDate }: Props) {
       origin: "smartphone"
     });
     consumptionAdded();
-    handleSendMessageToWatch();
+    if (hasWatch) handleSendMessageToWatch();
     setLoadingBottle(false);
   }
 

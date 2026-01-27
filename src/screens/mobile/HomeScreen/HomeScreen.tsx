@@ -7,13 +7,15 @@ import { watchEvents } from "react-native-wear-connectivity";
 import { Screen, Text } from "@components";
 import { dbService, useGetConsumptionDay } from "@db";
 import { MobileRoutesStackParamsList } from "@routes";
+import { connectivityService, MessageGetListDay, MessageListDayProps, MessageType } from "@connectivity";
+import { usePreferencesContext } from "@hooks";
 
 import { Consumption } from "./components/Consumption";
 import { ListConsumption } from "./components/ListConsumption/ListConsumption";
-import { connectivityService, MessageGetListDay, MessageListDayProps, MessageType } from "@connectivity";
 
 type ScreenProps = NativeStackScreenProps<MobileRoutesStackParamsList, "HomeScreen">
 export function HomeScreen({ }: ScreenProps) {
+  const { hasWatch, updateHasWatch } = usePreferencesContext();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [appState, setAppState] = useState(AppState.currentState);
   const { list, totalConsumption, refetch } = useGetConsumptionDay({ date: selectedDate });
@@ -22,8 +24,10 @@ export function HomeScreen({ }: ScreenProps) {
     async function sendMessagesToWatch() {
       await connectivityService.sendListDay({origin: "smartphone", date: selectedDate });
     }
-    sendMessagesToWatch();
-  }, [selectedDate, appState]);
+    if (hasWatch) {
+      sendMessagesToWatch();
+    }
+  }, [selectedDate, appState, hasWatch]);
   
   useEffect(() => {
     const sub = AppState.addEventListener("change", nextAppState => {
@@ -33,9 +37,11 @@ export function HomeScreen({ }: ScreenProps) {
       setAppState(nextAppState);
     });
     
-    connectivityService.getListDay({ origin: "smartphone" });
+    if (hasWatch) {
+      connectivityService.getListDay({ origin: "smartphone" });
+    }
     return () => sub.remove();
-  }, [appState]);
+  }, [appState, hasWatch]);
 
   useEffect(() => {
     const unsubscribe = watchEvents.on('message', (message) => {
@@ -44,6 +50,7 @@ export function HomeScreen({ }: ScreenProps) {
       if(messageType === "list-day") {
         const msg = message as MessageListDayProps
         if (msg.messageOrigin === "watch") {
+          updateHasWatch(true);
           handleRegisterListDay(msg);
         }
       }
@@ -51,6 +58,7 @@ export function HomeScreen({ }: ScreenProps) {
       if(messageType === "get-list-day") {
         const msg = message as MessageGetListDay;
         if (msg.messageOrigin === "watch") {
+          updateHasWatch(true);
           connectivityService.sendListDay({
             origin: "smartphone",
             date: new Date()
@@ -75,7 +83,8 @@ export function HomeScreen({ }: ScreenProps) {
           id: item.id,
           origin: item.origin,
           quantity: item.quantity,
-          register_type: item.register_type
+          register_type: item.register_type,
+          excluded: item.excluded
         })
       } catch (e) {
         console.log(e)

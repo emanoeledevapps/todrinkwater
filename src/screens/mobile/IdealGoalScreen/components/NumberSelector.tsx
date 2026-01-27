@@ -1,15 +1,13 @@
 import { Icon, Text } from "@components";
-import { usePreferencesContext } from "@hooks";
 import { TouchableOpacity, View } from "react-native";
 
 interface Props {
   value: number;
   handleMinus: () => void;
   handlePlus: () => void;
+  label?: string
 }
-export function NumberSelector({ handleMinus, handlePlus, value }: Props) {
-  const { unit } = usePreferencesContext();
-
+export function NumberSelector({ handleMinus, handlePlus, value, label }: Props) {
   return (
     <View className="flex-row border border-gray-400 rounded-2xl overflow-hidden h-12">
       <TouchableOpacity
@@ -25,7 +23,7 @@ export function NumberSelector({ handleMinus, handlePlus, value }: Props) {
           {Intl.NumberFormat("pt-BR").format(value)}
         </Text>
         <Text className="text-primary-text-light dark:text-primary-text-dark">
-          {unit}
+          {label}
         </Text>
       </View>
 

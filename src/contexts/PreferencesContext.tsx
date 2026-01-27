@@ -1,8 +1,10 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface SavedPreferencesProps {
+import { connectivityService } from "@connectivity";
+
+export interface SavedPreferencesProps {
   goal: number;
   glassSize: number;
   bottleSize: number;
@@ -24,7 +26,10 @@ export interface PreferencesContextProps {
   bottleSize: number;
   unit: string;
   darkMode: boolean;
+  hasWatch: boolean;
   changePreference: (data: ChangePreferenceProps) => void;
+  updateHasWatch: (value: boolean) => void;
+  updateWatchPreferences: (value: SavedPreferencesProps) => void;
 }
 
 export const PreferencesContext = createContext({} as PreferencesContextProps);
@@ -35,10 +40,19 @@ export function PreferecesProvider({ children }: PreferencesProviderProps) {
   const [glassSize, setGlassSize] = useState<number>(100);
   const [bottleSize, setBottleSize] = useState<number>(500);
   const [unit, setUnit] = useState<string>("ml");
+  const [hasWatch, setHasWatch] = useState<boolean>(false);
 
   useEffect(() => {
     checkSavedPreferences();
-  }, [])
+    checkWatch();
+  }, []);
+
+  async function checkWatch() {
+    const response = await AsyncStorage.getItem('has_watch');
+    if (response === '1') {
+      setHasWatch(true);
+    }
+  }
 
   async function checkSavedPreferences() {
     const response = await AsyncStorage.getItem("saved-preferences")
@@ -47,12 +61,18 @@ export function PreferecesProvider({ children }: PreferencesProviderProps) {
       setUnit(saved.unit);
       setGlassSize(saved.glassSize);
       setBottleSize(saved.bottleSize);
-      setGoal(saved.goal)
+      setGoal(saved.goal);
+      if (hasWatch) {
+        await connectivityService.sendPreferencesToWatch(saved);
+      }
     }
   }
 
   async function savePreferences(data: SavedPreferencesProps) {
     await AsyncStorage.setItem("saved-preferences", JSON.stringify(data));
+    if(hasWatch) {
+      await connectivityService.sendPreferencesToWatch(data);
+    }
   }
 
   async function changePreference(data: ChangePreferenceProps) {
@@ -88,9 +108,32 @@ export function PreferecesProvider({ children }: PreferencesProviderProps) {
     }
   }
 
+  async function updateHasWatch(value: boolean) {
+    setHasWatch(value);
+    await AsyncStorage.setItem('has_watch', value ? '1' : '0');
+  }
+
+  async function updateWatchPreferences(value: SavedPreferencesProps) {
+    setGlassSize(value.glassSize);
+    setGoal(value.goal);
+    setBottleSize(value.bottleSize);
+    setUnit(value.unit);
+    await AsyncStorage.setItem("saved-preferences", JSON.stringify(value));
+  }
+
   return (
     <PreferencesContext.Provider
-      value={{ goal, glassSize, unit, darkMode, bottleSize, changePreference }}
+      value={{ 
+        goal, 
+        glassSize, 
+        unit, 
+        darkMode, 
+        bottleSize, 
+        hasWatch, 
+        changePreference, 
+        updateHasWatch,
+        updateWatchPreferences 
+      }}
     >
       {children}
     </PreferencesContext.Provider>

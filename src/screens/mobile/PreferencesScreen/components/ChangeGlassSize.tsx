@@ -15,8 +15,8 @@ export function ChangeGlassSize() {
   }
 
   return (
-    <View className="items-center gap-1">
-      <Text className="text-sm text-secondary-text-light dark:text-secondary-text-dark">
+    <View className="items-center justify-between flex-row gap-1">
+      <Text className="text-black dark:text-white">
         Tamanho do copo
       </Text>
 

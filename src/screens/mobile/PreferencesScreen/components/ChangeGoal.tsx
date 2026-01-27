@@ -15,8 +15,8 @@ export function ChangeGoal() {
   }
 
   return (
-    <View className="items-center gap-1">
-      <Text className="text-sm text-secondary-text-light dark:text-secondary-text-dark">
+    <View className="items-center flex-row justify-between gap-1">
+      <Text className="text-black dark:text-white">
         Meta diária
       </Text>
 

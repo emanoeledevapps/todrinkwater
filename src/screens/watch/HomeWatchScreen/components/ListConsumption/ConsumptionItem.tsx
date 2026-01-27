@@ -23,7 +23,7 @@ export function ConsumptionItem({ data }: Props) {
           +{data.quantity} {unit}
         </Text>
 
-        {data.origin === "watch" && (
+        {data.origin === "smartphone" && (
           <View className="flex-row items-center gap-2">
             <View className="w-1 h-1 rounded-full bg-[#aaa]" />
             <Icon name="mobile" color="#aaa" size={18} />

@@ -40,7 +40,7 @@ export function Consumption({ total }: Props) {
                 {Intl.NumberFormat("pt-BR").format(total)} {unit}
               </Text>
               <Text className="text-sm text-secondary-text-light dark:text-secondary-text-dark">
-                Meta: {Intl.NumberFormat("pt-BR").format(goal)}
+                Meta: {Intl.NumberFormat("pt-BR", { maximumFractionDigits: 3 }).format(goal)} {unit}
               </Text>
             </View>
           )

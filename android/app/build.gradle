@@ -82,8 +82,8 @@ android {
         applicationId "com.todrinkwater"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 26
-        versionName "1.1.2"
+        versionCode 32
+        versionName "1.1.5"
     }
     signingConfigs {
         debug {

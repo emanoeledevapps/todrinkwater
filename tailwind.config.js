@@ -11,7 +11,7 @@ module.exports = {
         "primary-text-light": "#1E3A8A",
         "secondary-text-light": "#64748B",
         "accent-light": "#2563EB",
-        "card-light": "#ddd",
+        "card-light": "#EDE8E3",
         "primary-dark" : "#0E7490",
         "secondary-dark": "#164E63",
         "background-dark": "#02001C",

@@ -1,19 +1,21 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
-import { TouchableOpacity, View, AppState } from "react-native";
+import { AppState } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { watchEvents } from "react-native-wear-connectivity";
 
-import { connectivityService, MessageGetListDay, MessageListDayProps, MessageType } from "@connectivity";
+import { connectivityService, MessageGetListDay, MessageListDayProps, MessagePreferences, MessageType } from "@connectivity";
 import { dbService, useGetConsumptionDay } from "@db";
-import { Icon, Screen, Text } from "@components";
+import { Screen } from "@components";
 import { WatchRoutesStackParamsList } from "@routes";
+import { usePreferencesContext } from "@hooks";
 
 import { Consumption } from "./components/Consumption";
 import { ListConsumption } from "./components/ListConsumption/ListConsumption";
 
 type ScreenProps = NativeStackScreenProps<WatchRoutesStackParamsList, "HomeWatchScreen">
-export function HomeWatchScreen({ navigation }: ScreenProps) {
+export function HomeWatchScreen({ }: ScreenProps) {
+  const { updateWatchPreferences } = usePreferencesContext();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { list, totalConsumption, refetch } = useGetConsumptionDay({ date: selectedDate });
   const [appState, setAppState] = useState(AppState.currentState);
@@ -57,6 +59,13 @@ export function HomeWatchScreen({ navigation }: ScreenProps) {
           })
         }
       }
+
+      if(messageType === "preferences") {
+        const msg = message as MessagePreferences;
+        if (msg.messageOrigin === 'smartphone') {
+          updateWatchPreferences(msg.preferences)
+        }
+      }
     });
 
     return () => {
@@ -75,7 +84,8 @@ export function HomeWatchScreen({ navigation }: ScreenProps) {
           id: item.id,
           origin: item.origin,
           quantity: item.quantity,
-          register_type: item.register_type
+          register_type: item.register_type,
+          excluded: item.excluded
         })
       } catch (e) {
         console.log(e)
@@ -84,24 +94,10 @@ export function HomeWatchScreen({ navigation }: ScreenProps) {
     refetch();
   }
 
-  function handleGoToPreferences() {
-    navigation.navigate("PreferencesWatchScreen")
-  }
-
   return (
     <Screen watch>
       <Consumption total={totalConsumption} consumptionAdded={refetch} />
       <ListConsumption list={list} />
-
-      <View className="items-center mb-10">
-        <TouchableOpacity
-          className="px-5 h-10 rounded-full bg-gray-700 items-center justify-center flex-row gap-3"
-          onPress={handleGoToPreferences}
-        >
-          <Icon name="settings" color="white" />
-          <Text className="font-bold text-white text-sm">Preferências</Text>
-        </TouchableOpacity>
-      </View>
     </Screen>
   )
 }
